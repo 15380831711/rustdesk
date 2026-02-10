@@ -56,6 +56,12 @@ class MainActivity : FlutterActivity() {
             Intent(activity, MainService::class.java).also {
                 bindService(it, serviceConnection, Context.BIND_AUTO_CREATE)
             }
+        } else {
+            // Auto start service when app launches
+            Intent(activity, MainService::class.java).also {
+                bindService(it, serviceConnection, Context.BIND_AUTO_CREATE)
+            }
+            requestMediaProjection()
         }
         flutterMethodChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
