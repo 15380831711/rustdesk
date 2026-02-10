@@ -219,23 +219,52 @@ jobs:
         run: |
           export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
           sed -i "s/org.gradle.jvmargs=-Xmx1024M/org.gradle.jvmargs=-Xmx2g/g" ./flutter/android/gradle.properties
-          pushd flutter
-          flutter build apk --release
-          popd
+          case ${{ matrix.job.target }} in
+            aarch64-linux-android)
+              mkdir -p ./flutter/android/app/src/main/jniLibs/arm64-v8a
+              cp ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so ./flutter/android/app/src/main/jniLibs/arm64-v8a/
+              cp ./target/${{ matrix.job.target }}/release/liblibrustdesk.so ./flutter/android/app/src/main/jniLibs/arm64-v8a/librustdesk.so
+              pushd flutter
+              flutter build apk --release --target-platform android-arm64 --split-per-abi
+              mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk ../rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
+              popd
+            ;;
+            armv7-linux-androideabi)
+              mkdir -p ./flutter/android/app/src/main/jniLibs/armeabi-v7a
+              cp ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so ./flutter/android/app/src/main/jniLibs/armeabi-v7a/
+              cp ./target/${{ matrix.job.target }}/release/liblibrustdesk.so ./flutter/android/app/src/main/jniLibs/armeabi-v7a/librustdesk.so
+              pushd flutter
+              flutter build apk --release --target-platform android-arm --split-per-abi
+              mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk ../rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
+              popd
+            ;;
+            x86_64-linux-android)
+              mkdir -p ./flutter/android/app/src/main/jniLibs/x86_64
+              cp ${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so ./flutter/android/app/src/main/jniLibs/x86_64/
+              cp ./target/${{ matrix.job.target }}/release/liblibrustdesk.so ./flutter/android/app/src/main/jniLibs/x86_64/librustdesk.so
+              pushd flutter
+              flutter build apk --release --target-platform android-x64 --split-per-abi
+              mv build/app/outputs/flutter-apk/app-x86_64-release.apk ../rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
+              popd
+            ;;
+          esac
+          mkdir -p signed-apk; pushd signed-apk
+          mv ../rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk .
 
       - name: Upload APK Artifacts
+        if: env.ANDROID_SIGNING_KEY == null
         uses: actions/upload-artifact@master
         with:
           name: rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
-          path: flutter/build/app/outputs/flutter-apk/app-release.apk
+          path: signed-apk/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
 
       - name: Sign APK
         if: env.ANDROID_SIGNING_KEY != null
         shell: bash
         run: |
           echo "${{ secrets.ANDROID_SIGNING_KEY }}" | base64 --decode > signing-key.jks
-          ls -la flutter/build/app/outputs/flutter-apk/
-          for apk in flutter/build/app/outputs/flutter-apk/app-*.apk; do
+          ls -la signed-apk/
+          for apk in signed-apk/rustdesk-*.apk; do
             if [ -f "$apk" ]; then
               echo "Signing $apk"
               cp "$apk" "$apk.unsigned"
@@ -255,6 +284,13 @@ jobs:
             fi
           done
 
+      - name: Upload Signed APK Artifacts
+        if: env.ANDROID_SIGNING_KEY != null
+        uses: actions/upload-artifact@master
+        with:
+          name: rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
+          path: signed-apk/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
+
       - name: Publish Release
         if: env.ANDROID_SIGNING_KEY != null
         uses: softprops/action-gh-release@v1
@@ -262,4 +298,4 @@ jobs:
           prerelease: true
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            flutter/build/app/outputs/flutter-apk/app-release.apk
+            signed-apk/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
