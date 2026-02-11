@@ -8,20 +8,21 @@ on:
         required: false
         default: 'android-build'
         type: string
-  push:
-    branches:
-      - master
-      - main
-    paths:
-      - 'flutter/**'
-      - '.github/workflows/android-build.yml'
-      - 'libs/hbb_common/**'
-      - 'libs/scrap/**'
-      - 'libs/enigo/**'
-      - 'libs/clipboard_master/**'
-      - 'libs/virtual_display/**'
-      - 'libs/portable/**'
-      - 'libs/flutter_rust_bridge/**'
+  # Auto-build disabled - manual trigger only
+  # push:
+  #   branches:
+  #     - master
+  #     - main
+  #   paths:
+  #     - 'flutter/**'
+  #     - '.github/workflows/android-build.yml'
+  #     - 'libs/hbb_common/**'
+  #     - 'libs/scrap/**'
+  #     - 'libs/enigo/**'
+  #     - 'libs/clipboard_master/**'
+  #     - 'libs/virtual_display/**'
+  #     - 'libs/portable/**'
+  #     - 'libs/flutter_rust_bridge/**'
 
 env:
   RUST_VERSION: "1.75"
