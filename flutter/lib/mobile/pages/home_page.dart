@@ -43,6 +43,12 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initPages();
+    // 如果ID服务器和中继服务器都未配置，自动打开设置页面
+    final idServer = bind.mainGetOptionSync(key: 'custom-rendezvous-server');
+    final relayServer = bind.mainGetOptionSync(key: 'relay-server');
+    if (idServer.isEmpty && relayServer.isEmpty) {
+      _selectedIndex = _pages.length - 1; // 设置页面总是最后一个
+    }
   }
 
   void initPages() {
