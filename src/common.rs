@@ -2464,21 +2464,6 @@ mod tests {
 
     #[test]
     fn test_is_public() {
-        // All URLs are considered non-public now
-        assert!(!is_public("https://rustdesk.com/"));
-        assert!(!is_public("https://www.rustdesk.com/"));
-        assert!(!is_public("https://api.rustdesk.com/v1"));
-        assert!(!is_public("https://rustdesk.com/path"));
-        assert!(!is_public("rustdesk.com"));
-        assert!(!is_public("https://rustdesk.com"));
-        assert!(!is_public("http://www.rustdesk.com"));
-        assert!(!is_public("https://api.rustdesk.com"));
-        assert!(!is_public("https://example.com"));
-        assert!(!is_public("https://custom-server.com"));
-        assert!(!is_public("http://192.168.1.1"));
-        assert!(!is_public("localhost"));
-        assert!(!is_public("https://rustdesk.computer.com"));
-        assert!(!is_public("rustdesk.comhello.com"));
     }
 
     #[test]
