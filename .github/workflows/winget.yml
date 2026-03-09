@@ -1,8 +1,9 @@
 name: Publish to WinGet
 on:
-  release:
-    types: [released]
   workflow_dispatch:
+  # Auto-build disabled - manual trigger only
+  # release:
+  #   types: [released]
 jobs:
   publish:
     runs-on: ubuntu-latest
